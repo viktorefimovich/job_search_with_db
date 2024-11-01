@@ -7,6 +7,7 @@ class APIClient:
     """
     Класс для работы с API hh.ru.
     """
+
     BASE_URL = "https://api.hh.ru"
 
     def get_company_data(self, company_ids: List[str]) -> List[Dict[str, Any]]:
@@ -33,17 +34,23 @@ class APIClient:
 
                     for vacancy in vacancies:
                         salary_info = vacancy.get("salary")
-                        salary = salary_info.get("from") if salary_info else None  # Проверка, чтобы salary не было None
+                        salary = (
+                            salary_info.get("from") if salary_info else None
+                        )  # Проверка, чтобы salary не было None
 
-                        vacancies_data.append({
-                            "name": vacancy["name"],
-                            "salary": salary,
-                            "url": vacancy["alternate_url"]
-                        })
+                        vacancies_data.append(
+                            {
+                                "name": vacancy["name"],
+                                "salary": salary,
+                                "url": vacancy["alternate_url"],
+                            }
+                        )
 
-                    companies_data.append({
-                        "company_id": company_id,
-                        "name": company_name,
-                        "vacancies": vacancies_data
-                    })
+                    companies_data.append(
+                        {
+                            "company_id": company_id,
+                            "name": company_name,
+                            "vacancies": vacancies_data,
+                        }
+                    )
         return companies_data

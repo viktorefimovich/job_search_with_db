@@ -51,13 +51,16 @@ class DBManager:
         Создает таблицы для компаний и вакансий.
         """
         with self.conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 CREATE TABLE IF NOT EXISTS companies (
                     company_id VARCHAR(255) PRIMARY KEY,
                     name VARCHAR(255)
                 )
-            """)
-            cur.execute("""
+            """
+            )
+            cur.execute(
+                """
                 CREATE TABLE IF NOT EXISTS vacancies (
                     vacancy_id SERIAL PRIMARY KEY,
                     company_id VARCHAR(255),
@@ -66,7 +69,8 @@ class DBManager:
                     url TEXT,
                     FOREIGN KEY (company_id) REFERENCES companies (company_id)
                 )
-            """)
+            """
+            )
         print("Таблицы созданы.")
 
     def save_company_data(self, companies_data: List[Dict[str, Any]]) -> None:
@@ -77,17 +81,28 @@ class DBManager:
         """
         with self.conn.cursor() as cur:
             for company in companies_data:
-                cur.execute("""
+                cur.execute(
+                    """
                     INSERT INTO companies (company_id, name)
                     VALUES (%s, %s)
                     ON CONFLICT (company_id) DO NOTHING
-                """, (company['company_id'], company['name']))
+                """,
+                    (company["company_id"], company["name"]),
+                )
 
-                for vacancy in company['vacancies']:
-                    cur.execute("""
+                for vacancy in company["vacancies"]:
+                    cur.execute(
+                        """
                         INSERT INTO vacancies (company_id, title, salary, url)
                         VALUES (%s, %s, %s, %s)
-                    """, (company['company_id'], vacancy['name'], vacancy['salary'], vacancy['url']))
+                    """,
+                        (
+                            company["company_id"],
+                            vacancy["name"],
+                            vacancy["salary"],
+                            vacancy["url"],
+                        ),
+                    )
         print("Данные сохранены в БД.")
 
     def get_companies_and_vacancies_count(self) -> list:
@@ -97,12 +112,14 @@ class DBManager:
         :return: Список словарей с данными о компаниях и количестве вакансий.
         """
         with self.conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT companies.name, COUNT(vacancies.vacancy_id) 
                 FROM companies 
                 JOIN vacancies ON companies.company_id = vacancies.company_id
                 GROUP BY companies.name
-            """)
+            """
+            )
             return cur.fetchall()
 
     def get_all_vacancies(self) -> list:
@@ -112,11 +129,13 @@ class DBManager:
         :return: Список вакансий.
         """
         with self.conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT companies.name, vacancies.title, vacancies.salary, vacancies.url 
                 FROM vacancies 
                 JOIN companies ON vacancies.company_id = companies.company_id
-            """)
+            """
+            )
             return cur.fetchall()
 
     def get_avg_salary(self) -> float:
@@ -126,9 +145,11 @@ class DBManager:
         :return: Средняя зарплата.
         """
         with self.conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT AVG(salary) FROM vacancies WHERE salary IS NOT NULL
-            """)
+            """
+            )
             return cur.fetchone()[0]
 
     def get_vacancies_with_higher_salary(self) -> list:
@@ -139,12 +160,15 @@ class DBManager:
         """
         avg_salary = self.get_avg_salary()
         with self.conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT companies.name, vacancies.title, vacancies.salary 
                 FROM vacancies 
                 JOIN companies ON vacancies.company_id = companies.company_id
                 WHERE vacancies.salary > %s
-            """, (avg_salary,))
+            """,
+                (avg_salary,),
+            )
             return cur.fetchall()
 
     def get_vacancies_with_keyword(self, keyword: str) -> list:
@@ -155,10 +179,13 @@ class DBManager:
         :return: Список вакансий с ключевым словом.
         """
         with self.conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 SELECT companies.name, vacancies.title, vacancies.salary, vacancies.url 
                 FROM vacancies 
                 JOIN companies ON vacancies.company_id = companies.company_id
                 WHERE vacancies.title ILIKE %s
-            """, (f'%{keyword}%',))
+            """,
+                (f"%{keyword}%",),
+            )
             return cur.fetchall()
