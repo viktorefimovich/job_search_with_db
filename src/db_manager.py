@@ -105,7 +105,7 @@ class DBManager:
                     )
         print("Данные сохранены в БД.")
 
-    def get_companies_and_vacancies_count(self) -> list:
+    def get_companies_and_vacancies_count(self) -> Any:
         """
         Получает список компаний и количество вакансий у каждой.
 
@@ -114,15 +114,15 @@ class DBManager:
         with self.conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT companies.name, COUNT(vacancies.vacancy_id) 
-                FROM companies 
+                SELECT companies.name, COUNT(vacancies.vacancy_id)
+                FROM companies
                 JOIN vacancies ON companies.company_id = vacancies.company_id
                 GROUP BY companies.name
             """
             )
             return cur.fetchall()
 
-    def get_all_vacancies(self) -> list:
+    def get_all_vacancies(self) -> Any:
         """
         Получает список всех вакансий с названием компании, вакансии и зарплатой.
 
@@ -131,14 +131,14 @@ class DBManager:
         with self.conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT companies.name, vacancies.title, vacancies.salary, vacancies.url 
-                FROM vacancies 
+                SELECT companies.name, vacancies.title, vacancies.salary, vacancies.url
+                FROM vacancies
                 JOIN companies ON vacancies.company_id = companies.company_id
             """
             )
             return cur.fetchall()
 
-    def get_avg_salary(self) -> float:
+    def get_avg_salary(self) -> Any:
         """
         Получает среднюю зарплату по вакансиям.
 
@@ -152,7 +152,7 @@ class DBManager:
             )
             return cur.fetchone()[0]
 
-    def get_vacancies_with_higher_salary(self) -> list:
+    def get_vacancies_with_higher_salary(self) -> Any:
         """
         Получает вакансии с зарплатой выше средней.
 
@@ -162,8 +162,8 @@ class DBManager:
         with self.conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT companies.name, vacancies.title, vacancies.salary 
-                FROM vacancies 
+                SELECT companies.name, vacancies.title, vacancies.salary
+                FROM vacancies
                 JOIN companies ON vacancies.company_id = companies.company_id
                 WHERE vacancies.salary > %s
             """,
@@ -171,7 +171,7 @@ class DBManager:
             )
             return cur.fetchall()
 
-    def get_vacancies_with_keyword(self, keyword: str) -> list:
+    def get_vacancies_with_keyword(self, keyword: str) -> Any:
         """
         Получает вакансии, в названии которых содержится ключевое слово.
 
@@ -181,8 +181,8 @@ class DBManager:
         with self.conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT companies.name, vacancies.title, vacancies.salary, vacancies.url 
-                FROM vacancies 
+                SELECT companies.name, vacancies.title, vacancies.salary, vacancies.url
+                FROM vacancies
                 JOIN companies ON vacancies.company_id = companies.company_id
                 WHERE vacancies.title ILIKE %s
             """,

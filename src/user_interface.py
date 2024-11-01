@@ -8,7 +8,7 @@ from src.utils import read_json
 ROOTPATH = Path(__file__).resolve().parent.parent
 
 
-def main():
+def main() -> None:
     db_params = config()
     db_name = "hh_vacancies"
     db_manager = DBManager(db_name, db_params)
