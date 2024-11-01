@@ -2,45 +2,47 @@ import requests
 from typing import List, Dict, Any
 
 
-class HHAPIClient:
+class APIClient:
     """
-    Класс для взаимодействия с API hh.ru.
+    Класс для работы с API hh.ru.
     """
-
     BASE_URL = "https://api.hh.ru"
 
-    def __init__(self, company_ids: List[str]):
+    def get_company_data(self, company_ids: List[str]) -> List[Dict[str, Any]]:
         """
-        Инициализация клиента API hh.ru.
+        Получает данные о компаниях и их вакансиях с API hh.ru.
 
-        :param company_ids: Список ID компаний для получения данных.
+        :param company_ids: Список ID компаний, от которых требуется получить вакансии.
+        :return: Список словарей с информацией о каждой компании и её вакансиях.
         """
-        self.company_ids = company_ids
+        companies_data = []
+        for company_id in company_ids:
+            company_url = f"{self.BASE_URL}/employers/{company_id}"
+            vacancies_url = f"{self.BASE_URL}/vacancies?employer_id={company_id}"
 
-    def get_company_vacancies(self, company_id: str) -> List[Dict[str, Any]]:
-        """
-        Получает вакансии для указанной компании.
+            company_response = requests.get(company_url)
+            if company_response.status_code == 200:
+                company_info = company_response.json()
+                company_name = company_info.get("name")
 
-        :param company_id: ID компании.
-        :return: Список вакансий компании.
-        """
-        url = f"{self.BASE_URL}/vacancies"
-        params = {'employer_id': company_id}
-        response = requests.get(url, params=params)
-        response.raise_for_status()  # Проверка на ошибки
-        return response.json()['items']
+                vacancies_response = requests.get(vacancies_url)
+                if vacancies_response.status_code == 200:
+                    vacancies = vacancies_response.json().get("items", [])
+                    vacancies_data = []
 
-    def get_all_companies_data(self) -> List[Dict[str, Any]]:
-        """
-        Получает данные всех компаний и их вакансий.
+                    for vacancy in vacancies:
+                        salary_info = vacancy.get("salary")
+                        salary = salary_info.get("from") if salary_info else None  # Проверка, чтобы salary не было None
 
-        :return: Список с данными по компаниям и их вакансиям.
-        """
-        all_data = []
-        for company_id in self.company_ids:
-            vacancies = self.get_company_vacancies(company_id)
-            all_data.append({
-                'company_id': company_id,
-                'vacancies': vacancies
-            })
-        return all_data
+                        vacancies_data.append({
+                            "name": vacancy["name"],
+                            "salary": salary,
+                            "url": vacancy["alternate_url"]
+                        })
+
+                    companies_data.append({
+                        "company_id": company_id,
+                        "name": company_name,
+                        "vacancies": vacancies_data
+                    })
+        return companies_data
